@@ -71,6 +71,13 @@ def main():
         # wait for the page to load.
         page.wait_for_timeout(5000)
 
+        # "Welcome to Amazon Quick" modal blocks the dashboard in my tests,
+        # and the X has no usable name, but AWS tags it, so we can use that.
+        welcome_x = page.locator('[data-automation-id="welcome-modal-close-btn"]')
+        if welcome_x.count():
+            welcome_x.first.click()
+            page.wait_for_timeout(200)
+
         # find the visual and hover over it.
         v = page.get_by_text(main_table).first
         v.wait_for(state="visible", timeout=60_000)
