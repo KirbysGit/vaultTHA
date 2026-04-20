@@ -27,15 +27,20 @@ Stay in the project root and run:
 - Playwright drives a real browser to do those clicks for you
 - Used **sync** Playwright so it’s just a straight line: open → sign in → export, no `async`/`await` noise
 
-### If This Were More "Production":
-I'd probably focus more on these things :
+### If This Were More "Production"
+In a real product I'd tighten things up. Here's the kind of stuff I would add:
 
-- **Wait on real elements** instead of fixed `sleep`s
-- **Retries** when the UI is slow
-- Handle **weird CSV layouts** or **bad/missing cells**
-- **Validate types / ranges** before writing JSON
-- **Credentials from env vars**, not hardcoded in the file
-- **Headless** runs for CI if you need that
-- **Fallback if CSV breaks:** parse rows from the **table in the DOM** (scroll + wait so rows show up, then read cells),annoying because QuickSight often only keeps **visible** rows mounted, so you can miss data; CSV avoids that
+- **Wait for the actual button or table to appear** instead of “pause for 5 seconds and hope.” **Pauses** (`sleep`s) are easy to write but flaky if the site is slow or fast.
+- **Try again automatically** if a click fails or the page is still loading (**retries**).
+- **Deal with messy exports:** the download is a **CSV** (spreadsheet-style text: comma-separated values). A production script might handle renamed columns, empty cells, or weird number formats.
+- **Sanity-check the numbers** before writing **JSON** (a standard text format for structured data, that's what `output.json` is used for).
+- **Put secrets in environment variables** (**env vars**, settings the app reads from the machine, not from the source file) instead of pasting the password in the code.
+- **Run the browser in the background with no window** (**headless**) when you run automated checks on a server.
+- **Backup plan if CSV export breaks:** read the table straight off the web page. The DOM is messy on QuickSight because it often only keeps visible rows in memory, so you can miss rows unless you scroll and wait a lot, exporting CSV is the reliable path, thats why i did it.
 
-But for the sake of not over-engineering the solution, none of the above was required for this exercise, so it’s not in the script
+##  What I Did
+I didn't build all of what I just listed. I **patched the symptoms** of issues I ran into, for example QuickSight’s “welcome” popup blocks the chart until you click its **X**, which doesn’t have a normal label, so the script clicks the button Amazon marks with `welcome-modal-close-btn`. 
+I also assume the CSV headers stay **`Code`, `Date`, `State`, `FTDs`, `Registrations`** (**FTDs** = first-time depositors in this dataset). 
+
+
+None of the heavier production list was required for a proper output for this exercise, so I didn't add it to the script.
